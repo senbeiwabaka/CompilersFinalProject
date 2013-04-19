@@ -1,0 +1,15 @@
+title page 71 number 2.2 o'neil 2.27.2013
+var
+   box[101,100,100] a
+   int i
+   int j
+   int k
+begin
+   for k = 1 to 100
+      for j = 1 to 100
+         for i = 1 to 100
+            let a[i+1, j, k] = a[i, j, 5] + 22
+         endfor
+      endfor
+   endfor
+end

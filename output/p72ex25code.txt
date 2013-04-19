@@ -1,0 +1,17 @@
+title page 72 exercise 2.5 o'neil 2.27.2013
+var
+   box[100,100,100] a
+   box[100,100,100] b
+   int i
+   int j
+   int k
+begin
+   for k = 1 to 100
+      for j = 1 to 100
+         let b[1, j, k] = a[1, j - 1, k]
+         for i = 1 to 100
+            let a[i + 1, j, k] = b[i, 100 - j, k] + 25
+         endfor
+      endfor
+   endfor
+end

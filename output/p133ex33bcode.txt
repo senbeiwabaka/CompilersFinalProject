@@ -1,0 +1,15 @@
+title page 133 exercise 3.3b o'neil 2.27.2013
+var
+   box[101,101,101] a
+   int i
+   int j
+   int k
+begin
+   for k = 1 to 100
+      for j = 1 to 100
+         for i = 1 to 100
+            let a[i + 1, j + 1, k + 1] = a[i, 33, k] + 33
+         endfor
+      endfor
+   endfor
+end
