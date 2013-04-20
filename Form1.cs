@@ -50,5 +50,15 @@ namespace CompilersFinalProject
         {
             txtNormalization.Lines = LoopNormalization.Normalize(txtCode.Lines);
         }
+
+        private void outputGenerationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            txtOutput.Lines = OutputGenerator.Generate(txtNormalization.Lines.ToList());
+        }
+
+        private void dependencyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
