@@ -1,0 +1,14 @@
+title happy
+var
+	list arr[10]
+	int x
+	int y
+	int j
+begin
+	for x = 1000 to 1 by -2
+		let arr[x] = arr[x]
+		for y = 10 to 100 by 10
+			let arr[y] = arr[y]
+		endfor
+	endfor
+end
