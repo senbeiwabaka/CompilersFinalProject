@@ -10,27 +10,34 @@ namespace CompilersFinalProject
     {
         public static string[] Generate(List<string> code)
         {
+            // the output to be retuned to the caller
             var output = new List<string>();
+            // to hold the statements between var and begin
             var variable = new List<Variable>();
             var count = 0;
+            // array initialized to the size of the code and is to hold only the for loops
             var forloops = new List<string>(code.Count);
+
             for (int i = 0; i < forloops.Capacity; i++)
             {
-                forloops.Add("");
+                forloops.Add(string.Empty);
             }
 
-            Array.Copy(code.ToArray(), code.FindIndex(x => Regex.IsMatch(x, "\\b" + "for" + "\\b")), forloops.ToArray(), code.FindIndex(x => Regex.IsMatch(x, "\\b" + "for" + "\\b")) - 1, 5);
-
+            // needed because the copy methods require [] instead of lists
             var arr = forloops.ToArray();
 
+            //copys only the for loops to the end of the program (based on midterm programs) to the string[] arr array
             code.CopyTo(code.FindIndex(x => Regex.IsMatch(x, "\\b" + "for" + "\\b")), arr, code.FindIndex(x => Regex.IsMatch(x, "\\b" + "for" + "\\b")), code.FindIndex(x => Regex.IsMatch(x, "\\b" + "end" + "\\b")) - code.FindIndex(x => Regex.IsMatch(x, "\\b" + "for" + "\\b")));
 
+            // sets the forloops array to the contents of arr
             forloops = new List<string>(arr);
 
             arr = null;
 
+            // returns a string array of all the variable statements listed below
             var variables = code.FindAll(x => x.Contains("int") || x.Contains("list") || x.Contains("table") || x.Contains("box"));
 
+            // takes all the variables from this array and adds them to the array of type Variable along with their position and type
             variables.ForEach(x => 
                 {
                     x = x.Trim(' ', '\t');
@@ -53,9 +60,25 @@ namespace CompilersFinalProject
                     }
                 });
 
+            // array to hold the read and write information
             var lineinfo = new List<LineInformation>();
 
+            //"dynamic" array for N number of upper bounds
             var loops = new int[Regex.Matches(string.Join("\n", forloops), "\\b" + "for" + "\\b").Count];
+
+            count = 0;
+
+            var loopIndex = new List<LoopInformation>(Regex.Matches(string.Join("\n", forloops), "\\b" + "for" + "\\b").Count);
+
+            count =0;
+
+            forloops.ForEach(x => 
+                {
+                    if (Regex.IsMatch(x, "\\b" + "for" + "\\b"))
+                    {
+                        loopIndex.Add(new LoopInformation { LoopIndex = x.Substring(x.IndexOf("for") + 4, x.IndexOf("=") - x.IndexOf("for") - 5), Depth = ++count });
+                    }
+                });
 
             count = 0;
 
@@ -69,37 +92,191 @@ namespace CompilersFinalProject
 
                     if (x.StartsWith("for"))
                     {
+                        // adds the loop upper bounds to the list
                         loops[count++] = int.Parse(x.Substring(x.IndexOf("to") + 2));
                     }
                     else if (x.StartsWith("let"))
                     {
                         var beforeEqual = x.Substring(0, x.IndexOf("="));
+                        var afterEqual = x.Substring(x.IndexOf("=") + 1);
 
-                        //foreach (var item in variable)
-                        //{
-                        //    if (Regex.IsMatch(beforeEqual, "\\b" + item.Name + "\\b"))
-                        //    {
-                        //        forloops[index] = "";
-                        //    }
-                        //}
-
-                        var something = beforeEqual.Substring(3);
-                        Console.WriteLine(variable.Exists(s => s.Name == something.Trim()));
-
-                        if (variable.Exists(s => s.Name == beforeEqual.Substring(3).Trim()))
+                        // checks to see if the variable is an array, if not, it is removed
+                        if (variable.Exists(s => s.Name == beforeEqual.Substring(3).Trim() && (s.TypeInt != 1 || s.TypeInt != 2 || s.TypeInt != 3)))
                         {
-                            forloops[index] = "";
-                            Console.WriteLine(true);
+                            forloops[index] = string.Empty;
+                            beforeEqual = string.Empty;
+                            afterEqual = string.Empty;
                         }
-                        else
+
+                        if(!string.IsNullOrEmpty(beforeEqual))
                         {
-                            something = beforeEqual.Substring(3, beforeEqual.IndexOf("[") - 3).Trim();
+                            // finds the array that is being used in this let statement
                             var v = variable.Find(s => s.Name.Contains(beforeEqual.Substring(3, beforeEqual.IndexOf("[") - 3).Trim()));
-                            lineinfo.Add(new LineInformation { LineNumber = index, Array = v.Position });
+                            
+                            //counts the loop depth for this array access
+                            count = 0;
+                            var endfor = 0;
+                            for (int i = 0; i < index; i++)
+                            {
+                                if (Regex.IsMatch(forloops[i], "\\b" + "for" + "\\b"))
+                                {
+                                    ++count;
+                                }
+
+                                if (Regex.IsMatch(forloops[i], "\\b" + "endfor" + "\\b"))
+                                {
+                                    ++endfor;
+                                }
+                            }
+
+                            var constant = new List<int>(count);
+                            var coefficient=new List<int>(count);
+
+                            if (v.TypeInt == 1)
+                            {
+                                var listIndex = beforeEqual.Substring(beforeEqual.IndexOf("[") + 1, beforeEqual.IndexOf("]") - beforeEqual.IndexOf("[") - 1);
+                                if (listIndex.Length == 1)
+                                {
+                                    var li = loopIndex.Find(s => s.LoopIndex == listIndex.Trim());
+
+                                    if (li != null)
+                                    {
+                                        constant.Add(0);
+                                        coefficient.Add(1);
+                                    }
+                                    else
+                                    {
+                                        constant.Add(int.Parse(listIndex));
+                                        coefficient.Add(0);
+                                    }
+                                }
+                                else
+                                {
+                                    var notModified = listIndex;
+                                    var words = new List<string>();
+
+                                    ValueExtration(words, listIndex);
+
+                                    var result = 0;
+
+                                    var k = 0;
+                                    while (k < words.Count)
+                                    {
+                                        var li = loopIndex.Find(s => s.LoopIndex == words[k].Trim());
+                                        if (li != null)
+                                        {
+                                            if (k > 0)
+                                            {
+                                                if (words[k - 1] == "-")
+                                                {
+                                                    coefficient.Add(-1);
+                                                    words.RemoveRange(k - 1, 2);
+                                                }
+                                                else if (words[k - 1] == "*")
+                                                {
+                                                    coefficient.Add(int.Parse(words[k - 2]));
+                                                    words.RemoveRange(k - 2, 3);
+                                                }
+                                                else
+                                                {
+                                                    coefficient.Add(1);
+                                                    words.RemoveAt(k);
+                                                }
+
+                                                k = 0;
+                                            }
+                                            else
+                                            {
+                                                coefficient.Add(1);
+                                                words.RemoveAt(k);
+                                                k = 0;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            k++;
+                                        }
+                                    }
+
+                                    k = 0;
+                                    while (k < words.Count)
+                                    {
+                                        if (int.TryParse(words[k], out result))
+                                        {
+                                            if (k > 0)
+                                            {
+                                                if (words[k - 1] == "-")
+                                                {
+                                                    constant.Add(-result);
+                                                    words.RemoveRange(k - 1, 2);
+                                                }
+                                                else if (words[k - 1] == "*")
+                                                {
+                                                    constant.Add(int.Parse(words[k - 2]) * result);
+                                                    words.RemoveRange(k - 2, 3);
+                                                }
+                                                else
+                                                {
+                                                    constant.Add(result);
+                                                    words.RemoveAt(k);
+                                                }
+
+                                                k = 0;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            k++;
+                                        }
+                                    }
+                                    var amount = constant.Sum();
+                                    constant.Clear();
+                                    constant.Add(amount);
+                                }
+
+                            }
+                            else if (v.TypeInt == 2)
+                            {
+                            }
+                            else if (v.TypeInt == 3)
+                            {
+                            }
+
+                            var const_coeff = string.Empty;
+
+                            for (int i = 0; i < constant.Count; i++)
+                            {
+                                const_coeff += constant[i] + " ";
+
+                                for (int j = 0; j < count - endfor; j++)
+                                {
+                                    const_coeff += coefficient[j] + " ";
+                                }
+
+                                coefficient.RemoveRange(0, count - endfor);
+                            }
+
+                            lineinfo.Add(new LineInformation { LineNumber = index, Array = v.Position, LoopDepth = (count - endfor), Constant_Coeffient = const_coeff, Write = true });
+                        }
+
+                        if (!string.IsNullOrEmpty(afterEqual))
+                        {
+
                         }
                     }
                 });
 
+            #region information added to output
+
+            InformationOutput(output, variable, lineinfo, loops);
+
+            #endregion
+
+            return output.ToArray();
+        }
+
+        private static void InformationOutput(List<string> output, List<Variable> variable, List<LineInformation> lineinfo, int[] loops)
+        {
             var variablePositions = string.Empty;
 
             foreach (var item in variable)
@@ -109,8 +286,6 @@ namespace CompilersFinalProject
 
             output.Add(variablePositions);
 
-            //output.Add(Environment.NewLine);
-
             foreach (var item in loops)
             {
                 output.Add(item.ToString());
@@ -118,10 +293,59 @@ namespace CompilersFinalProject
 
             output.Add("0");
 
-            return output.ToArray();
+            foreach (var item in lineinfo)
+            {
+                if (item.Write)
+                {
+                    //var 
+                    output.Add(item.LineNumber + " " + item.Array + " " + item.LoopDepth + " " + item.Constant_Coeffient);
+                }
+            }
+
+            output.Add("0");
+
+            foreach (var item in lineinfo)
+            {
+                if (!item.Write)
+                {
+                    //var 
+                    output.Add(item.LineNumber.ToString() + " " + item.Array.ToString() + " " + item.LoopDepth);
+                }
+            }
+        }
+
+        /// <summary>
+        /// creates a list of the variables/constants in a non 3OP statement
+        /// </summary>
+        /// <param name="words">returned list of the statement</param>
+        /// <param name="statment">statement of variables/constants to be separated</param>
+        private static void ValueExtration(List<string> words, string statment)
+        {
+            while (statment.Length > 0)
+            {
+                if (statment.IndexOf(" ", StringComparison.Ordinal) < 0)
+                {
+                    words.Add(statment);
+                    statment = "";
+                }
+                else
+                {
+                    words.Add(statment.Substring(0, statment.IndexOf(" ")));
+                    statment = statment.Substring(statment.IndexOf(" ") + 1);
+                }
+            }
+        }
+
+        private class LoopInformation
+        {
+            public string LoopIndex { get; set; }
+            public int Depth { get; set; }
         }
     }
 
+    /// <summary>
+    /// Holds the variable information such as the name (int x), type (list, box), type int (1, 2), and position such as if there are 100 variables, which one are we accessing for the array
+    /// </summary>
     public class Variable
     {
         public string Name { get; set; }
@@ -130,13 +354,15 @@ namespace CompilersFinalProject
         public int Position { get; set; }
     }
 
+    /// <summary>
+    /// holds the read and write information
+    /// </summary>
     public class LineInformation
     {
         public int LineNumber { get; set; }
         public int Array { get; set; }
         public int LoopDepth { get; set; }
-        public int[] Constant { get; set; }
-        public int[] Coefficient { get; set; }
+        public string Constant_Coeffient { get; set; }
         public bool Write { get; set; }
     }
 }
