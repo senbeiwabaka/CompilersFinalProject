@@ -137,12 +137,24 @@ namespace CompilersFinalProject
                                 var listIndex = beforeEqual.Substring(beforeEqual.IndexOf("[") + 1, beforeEqual.IndexOf("]") - beforeEqual.IndexOf("[") - 1);
                                 if (listIndex.Length == 1)
                                 {
+                                    
                                     var li = loopIndex.Find(s => s.LoopIndex == listIndex.Trim());
 
                                     if (li != null)
                                     {
                                         constant.Add(0);
+                                        var depth = 1;
+                                        while (depth < li.Depth)
+                                        {
+                                            coefficient.Add(0);
+                                            ++depth;
+                                        }
                                         coefficient.Add(1);
+                                        depth = li.Depth;
+                                        while (depth < (count - endfor))
+                                        {
+                                            coefficient.Add(0);
+                                        }
                                     }
                                     else
                                     {
@@ -235,11 +247,35 @@ namespace CompilersFinalProject
                                 }
 
                             }
-                            else if (v.TypeInt == 2)
+                            else
                             {
-                            }
-                            else if (v.TypeInt == 3)
-                            {
+                                var substring = beforeEqual.Substring(beforeEqual.IndexOf("[") + 1, beforeEqual.IndexOf(",") - beforeEqual.IndexOf("[") - 1);
+                                var commaIndex=beforeEqual.IndexOf(",");
+
+                                Console.WriteLine(substring);
+                                var pattern = "\\b" + "," + "\\b";
+
+                                var commaCount = beforeEqual.ToCharArray().Count(c => c == ',');
+                                var currentComma = 0;
+
+                                while (currentComma <= commaCount)
+                                {
+                                    Console.WriteLine(substring);
+                                    
+
+                                    if (beforeEqual.IndexOf(",", commaIndex + 1) > 1)
+                                    {
+                                        substring = beforeEqual.Substring(commaIndex + 2, beforeEqual.IndexOf(",", commaIndex + 1) > 0 ? beforeEqual.IndexOf(",", commaIndex + 1) - commaIndex - 2: beforeEqual.IndexOf("]") - commaIndex - 2);
+
+                                        commaIndex = beforeEqual.IndexOf(",", commaIndex + 1);
+                                        ++currentComma;
+                                    }
+                                    else
+                                    {
+                                        substring = beforeEqual.Substring(commaIndex + 2, beforeEqual.IndexOf("]") - commaIndex - 2);
+                                        ++currentComma;
+                                    }
+                                }
                             }
 
                             var const_coeff = string.Empty;
