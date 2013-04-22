@@ -135,116 +135,8 @@ namespace CompilersFinalProject
                             if (v.TypeInt == 1)
                             {
                                 var listIndex = beforeEqual.Substring(beforeEqual.IndexOf("[") + 1, beforeEqual.IndexOf("]") - beforeEqual.IndexOf("[") - 1);
-                                if (listIndex.Length == 1)
-                                {
-                                    
-                                    var li = loopIndex.Find(s => s.LoopIndex == listIndex.Trim());
 
-                                    if (li != null)
-                                    {
-                                        constant.Add(0);
-                                        var depth = 1;
-                                        while (depth < li.Depth)
-                                        {
-                                            coefficient.Add(0);
-                                            ++depth;
-                                        }
-                                        coefficient.Add(1);
-                                        depth = li.Depth;
-                                        while (depth < (count - endfor))
-                                        {
-                                            coefficient.Add(0);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        constant.Add(int.Parse(listIndex));
-                                        coefficient.Add(0);
-                                    }
-                                }
-                                else
-                                {
-                                    var notModified = listIndex;
-                                    var words = new List<string>();
-
-                                    ValueExtration(words, listIndex);
-
-                                    var result = 0;
-
-                                    var k = 0;
-                                    while (k < words.Count)
-                                    {
-                                        var li = loopIndex.Find(s => s.LoopIndex == words[k].Trim());
-                                        if (li != null)
-                                        {
-                                            if (k > 0)
-                                            {
-                                                if (words[k - 1] == "-")
-                                                {
-                                                    coefficient.Add(-1);
-                                                    words.RemoveRange(k - 1, 2);
-                                                }
-                                                else if (words[k - 1] == "*")
-                                                {
-                                                    coefficient.Add(int.Parse(words[k - 2]));
-                                                    words.RemoveRange(k - 2, 3);
-                                                }
-                                                else
-                                                {
-                                                    coefficient.Add(1);
-                                                    words.RemoveAt(k);
-                                                }
-
-                                                k = 0;
-                                            }
-                                            else
-                                            {
-                                                coefficient.Add(1);
-                                                words.RemoveAt(k);
-                                                k = 0;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            k++;
-                                        }
-                                    }
-
-                                    k = 0;
-                                    while (k < words.Count)
-                                    {
-                                        if (int.TryParse(words[k], out result))
-                                        {
-                                            if (k > 0)
-                                            {
-                                                if (words[k - 1] == "-")
-                                                {
-                                                    constant.Add(-result);
-                                                    words.RemoveRange(k - 1, 2);
-                                                }
-                                                else if (words[k - 1] == "*")
-                                                {
-                                                    constant.Add(int.Parse(words[k - 2]) * result);
-                                                    words.RemoveRange(k - 2, 3);
-                                                }
-                                                else
-                                                {
-                                                    constant.Add(result);
-                                                    words.RemoveAt(k);
-                                                }
-
-                                                k = 0;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            k++;
-                                        }
-                                    }
-                                    var amount = constant.Sum();
-                                    constant.Clear();
-                                    constant.Add(amount);
-                                }
+                                ReadWriteLoopInformation(count, loopIndex, endfor, constant, coefficient, listIndex);
 
                             }
                             else
@@ -252,16 +144,12 @@ namespace CompilersFinalProject
                                 var substring = beforeEqual.Substring(beforeEqual.IndexOf("[") + 1, beforeEqual.IndexOf(",") - beforeEqual.IndexOf("[") - 1);
                                 var commaIndex=beforeEqual.IndexOf(",");
 
-                                Console.WriteLine(substring);
-                                var pattern = "\\b" + "," + "\\b";
-
                                 var commaCount = beforeEqual.ToCharArray().Count(c => c == ',');
                                 var currentComma = 0;
 
                                 while (currentComma <= commaCount)
                                 {
-                                    Console.WriteLine(substring);
-                                    
+                                    ReadWriteLoopInformation(count, loopIndex, endfor, constant, coefficient, substring);
 
                                     if (beforeEqual.IndexOf(",", commaIndex + 1) > 1)
                                     {
@@ -309,6 +197,153 @@ namespace CompilersFinalProject
             #endregion
 
             return output.ToArray();
+        }
+
+        private static void ReadWriteLoopInformation(int count, List<LoopInformation> loopIndex, int endfor, List<int> constant, List<int> coefficient, string listIndex)
+        {
+            if (listIndex.Length == 1)
+            {
+
+                var li = loopIndex.Find(s => s.LoopIndex == listIndex.Trim());
+
+                if (li != null)
+                {
+                    constant.Add(0);
+                    var depth = 1;
+                    while (depth < li.Depth)
+                    {
+                        coefficient.Add(0);
+                        ++depth;
+                    }
+                    coefficient.Add(1);
+                    depth = li.Depth;
+                    while (depth < (count - endfor))
+                    {
+                        coefficient.Add(0);
+                        ++depth;
+                    }
+                }
+                else
+                {
+                    constant.Add(int.Parse(listIndex));
+                    coefficient.Add(0);
+                }
+            }
+            else
+            {
+                var notModified = listIndex;
+                var words = new List<string>();
+
+                ValueExtration(words, listIndex);
+
+                var result = 0;
+                var depth = 1;
+
+                var k = 0;
+                while (k < words.Count)
+                {
+                    var li = loopIndex.Find(s => s.LoopIndex == words[k].Trim());
+                    if (li != null)
+                    {
+                        while (depth < li.Depth)
+                        {
+                            coefficient.Add(0);
+                            ++depth;
+                        }
+                        if (k > 0)
+                        {
+                            if (words[k - 1] == "-")
+                            {
+                                coefficient.Add(-1);
+                                words.RemoveRange(k - 1, 2);
+                            }
+                            else if (words[k - 1] == "*")
+                            {
+                                coefficient.Add(int.Parse(words[k - 2]));
+                                words.RemoveRange(k - 2, 3);
+                            }
+                            else
+                            {
+                                coefficient.Add(1);
+                                words.RemoveAt(k);
+                            }
+
+                            k = 0;
+                        }
+                        else
+                        {
+                            coefficient.Add(1);
+                            words.RemoveAt(k);
+                            k = 0;
+                            //++depth;
+                            for (int i = 0; i < words.Count; i++)
+                            {
+                                if (loopIndex.Exists(x => x.LoopIndex == words[i]))
+                                {
+                                    depth = loopIndex.Find(x => x.LoopIndex == words[i]).Depth;
+                                }
+                                else
+                                {
+                                    depth = li.Depth;
+                                }
+                            }
+                            //depth = li.Depth;
+                            while (depth < (count - endfor))
+                            {
+                                coefficient.Add(0);
+                                ++depth;
+                            }
+                            //++depth;
+                        }
+
+                        //depth = li.Depth;
+                        //while (depth < (count - endfor))
+                        //{
+                        //    coefficient.Add(0);
+                        //    ++depth;
+                        //}
+                    }
+                    else
+                    {
+                        k++;
+                    }
+                }
+
+                k = 0;
+                while (k < words.Count)
+                {
+                    if (int.TryParse(words[k], out result))
+                    {
+                        if (k > 0)
+                        {
+                            if (words[k - 1] == "-")
+                            {
+                                constant.Add(-result);
+                                words.RemoveRange(k - 1, 2);
+                            }
+                            else if (words[k - 1] == "*")
+                            {
+                                constant.Add(int.Parse(words[k - 2]) * result);
+                                words.RemoveRange(k - 2, 3);
+                            }
+                            else
+                            {
+                                constant.Add(result);
+                                words.RemoveAt(k);
+                            }
+
+                            k = 0;
+                        }
+                    }
+                    else
+                    {
+                        k++;
+                    }
+                }
+                var amount = constant.Sum();
+                constant.Clear();
+                constant.Add(amount);
+            }
         }
 
         private static void InformationOutput(List<string> output, List<Variable> variable, List<LineInformation> lineinfo, int[] loops)
