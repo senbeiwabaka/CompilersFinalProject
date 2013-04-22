@@ -1,6 +1,6 @@
 title happy
 var
-	list arr[10]
+	list[10] arr
 	int x
 	int y
 	int j
