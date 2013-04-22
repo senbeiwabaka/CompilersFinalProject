@@ -1,0 +1,14 @@
+title happy
+var
+	list[10] arr
+	int x
+	int y
+	int j
+begin
+	for x = 1 to 100
+		let arr[x] = arr[x]
+		for y = 1 to 100
+			let arr[y + x + 1 + 10] = arr[y]
+		endfor
+	endfor
+end
