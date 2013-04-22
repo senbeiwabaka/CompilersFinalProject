@@ -203,7 +203,6 @@ namespace CompilersFinalProject
         {
             if (listIndex.Length == 1)
             {
-
                 var li = loopIndex.Find(s => s.LoopIndex == listIndex.Trim());
 
                 if (li != null)
@@ -226,7 +225,12 @@ namespace CompilersFinalProject
                 else
                 {
                     constant.Add(int.Parse(listIndex));
-                    coefficient.Add(0);
+                    var depth = 1;
+                    while (depth < (count - endfor))
+                    {
+                        coefficient.Add(0);
+                        ++depth;
+                    }
                 }
             }
             else
