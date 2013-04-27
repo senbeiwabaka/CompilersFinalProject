@@ -39,16 +39,21 @@ namespace CompilersFinalProject
 
                 txtCode.Clear();
                 txtNormalization.Clear();
+                txtOutput.Clear();
 
                 txtCode.Text = resultsReader.ReadToEnd();
 
                 Text = "Output File : " + open.SafeFileName;
+
+                loopNormalizationToolStripMenuItem.Enabled = true;
             }
         }
 
         private void loopNormalizationToolStripMenuItem_Click(object sender, EventArgs e)
         {
             txtNormalization.Lines = LoopNormalization.Normalize(txtCode.Lines);
+
+            outputGenerationToolStripMenuItem.Enabled = true;
         }
 
         private void outputGenerationToolStripMenuItem_Click(object sender, EventArgs e)

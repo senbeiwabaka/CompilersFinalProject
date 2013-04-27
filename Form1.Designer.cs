@@ -42,6 +42,8 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.txtOutput = new System.Windows.Forms.TextBox();
+            this.txtDependency = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -51,7 +53,7 @@
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(841, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(1016, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -77,6 +79,7 @@
             // 
             // loopNormalizationToolStripMenuItem
             // 
+            this.loopNormalizationToolStripMenuItem.Enabled = false;
             this.loopNormalizationToolStripMenuItem.Name = "loopNormalizationToolStripMenuItem";
             this.loopNormalizationToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
             this.loopNormalizationToolStripMenuItem.Text = "Loop Normalization";
@@ -84,6 +87,7 @@
             // 
             // outputGenerationToolStripMenuItem
             // 
+            this.outputGenerationToolStripMenuItem.Enabled = false;
             this.outputGenerationToolStripMenuItem.Name = "outputGenerationToolStripMenuItem";
             this.outputGenerationToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
             this.outputGenerationToolStripMenuItem.Text = "Output Generation";
@@ -91,6 +95,7 @@
             // 
             // dependencyToolStripMenuItem
             // 
+            this.dependencyToolStripMenuItem.Enabled = false;
             this.dependencyToolStripMenuItem.Name = "dependencyToolStripMenuItem";
             this.dependencyToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
             this.dependencyToolStripMenuItem.Text = "Dependency";
@@ -118,9 +123,11 @@
             // 
             // txtNormalization
             // 
+            this.txtNormalization.Enabled = false;
             this.txtNormalization.Location = new System.Drawing.Point(265, 44);
             this.txtNormalization.Multiline = true;
             this.txtNormalization.Name = "txtNormalization";
+            this.txtNormalization.ReadOnly = true;
             this.txtNormalization.Size = new System.Drawing.Size(242, 347);
             this.txtNormalization.TabIndex = 2;
             // 
@@ -153,17 +160,40 @@
             // 
             // txtOutput
             // 
+            this.txtOutput.Enabled = false;
             this.txtOutput.Location = new System.Drawing.Point(513, 44);
             this.txtOutput.Multiline = true;
             this.txtOutput.Name = "txtOutput";
+            this.txtOutput.ReadOnly = true;
             this.txtOutput.Size = new System.Drawing.Size(242, 347);
             this.txtOutput.TabIndex = 6;
+            // 
+            // txtDependency
+            // 
+            this.txtDependency.Enabled = false;
+            this.txtDependency.Location = new System.Drawing.Point(761, 44);
+            this.txtDependency.Multiline = true;
+            this.txtDependency.Name = "txtDependency";
+            this.txtDependency.ReadOnly = true;
+            this.txtDependency.Size = new System.Drawing.Size(242, 347);
+            this.txtDependency.TabIndex = 7;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(758, 28);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(68, 13);
+            this.label4.TabIndex = 8;
+            this.label4.Text = "Dependency";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(841, 403);
+            this.ClientSize = new System.Drawing.Size(1016, 403);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.txtDependency);
             this.Controls.Add(this.txtOutput);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -197,6 +227,8 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox txtOutput;
+        private System.Windows.Forms.TextBox txtDependency;
+        private System.Windows.Forms.Label label4;
     }
 }
 
