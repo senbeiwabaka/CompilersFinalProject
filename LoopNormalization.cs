@@ -6,11 +6,18 @@ namespace CompilersFinalProject
 {
     public class LoopNormalization
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="code"></param>
+        /// <returns></returns>
         public static string[] Normalize(string[] code)
         {
             var loops = new List<string>(code);
+            // counts the number of for loops
             var count = Regex.Matches(string.Join(" ", loops), @"\b" + "for" + @"\b").Count;
             var loopCount = 0;
+            //
             var change = new List<LoopNameValue>(count);
             var loopCurrent = 0;
             var endforIndex = loops.FindLastIndex(x => Regex.IsMatch(x, "\\b" + "endfor" + "\\b"));
@@ -60,7 +67,7 @@ namespace CompilersFinalProject
 
                             var otherIndex = change.FindIndex(s => s.Name == name ? true : false);
 
-                            change[otherIndex].Value = stepSize + " * " + change[otherIndex].Name + " - " + (ss - lb).ToString();
+                            change[otherIndex].Value = stepSize.Trim() + " * " + change[otherIndex].Name.Trim() + " - " + (ss - lb).ToString();
 
                             if (loopCurrent == 0)
                             {
@@ -87,7 +94,7 @@ namespace CompilersFinalProject
                         {
                             if (Regex.IsMatch(loops[index], "\\b" + item.Name.Trim() + "\\b"))
                             {
-                                loops[index] = Regex.Replace(loops[index], "\\b" + item.Name.Trim() + "\\b", item.Value);
+                                loops[index] = Regex.Replace(loops[index], "\\b" + item.Name.Trim() + "\\b", item.Value.Trim());
                             }
                         }
                     }
@@ -119,12 +126,18 @@ namespace CompilersFinalProject
         }
     }
 
+    /// <summary>
+    /// the loops name 
+    /// </summary>
     public class LoopNameValue
     {
         public string Name { get; set; }
         public string Value { get; set; }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class EndFor : IComparable<EndFor>
     {
         public int Index { get; set; }
