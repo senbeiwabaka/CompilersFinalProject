@@ -13,41 +13,48 @@ namespace CompilersFinalProject
         /// <returns></returns>
         public static string[] Normalize(string[] code)
         {
-            var loops = new List<string>(code);
+            var statements = new List<string>(code);
             // counts the number of for loops
-            var count = Regex.Matches(string.Join(" ", loops), @"\b" + "for" + @"\b").Count;
+            var count = Regex.Matches(string.Join(" ", statements), @"\b" + "for" + @"\b").Count;
             var loopCount = 0;
             //
-            var change = new List<LoopNameValue>(count);
+            var loopIndexChange = new List<LoopIndexChange>(count);
             var loopCurrent = 0;
-            var endforIndex = loops.FindLastIndex(x => Regex.IsMatch(x, "\\b" + "endfor" + "\\b"));
+            var endforIndex = statements.FindLastIndex(x => Regex.IsMatch(x, "\\b" + "endfor" + "\\b"));
             var endFor = new List<EndFor>(count);
 
-            loops.ForEach(x =>
+            statements.ForEach(x =>
                 {
                     var original = x;
                     x = x.Trim(' ', '\t');
                     var pattern = @"\b" + "for" + @"\b";
-                    var index = loops.IndexOf(original);
+                    var index = statements.IndexOf(original);
 
                     if (Regex.IsMatch(x, pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace))
                     {
                         var lowerBound = x.Substring(x.IndexOf("=") + 1, x.IndexOf("to") - x.IndexOf("=") - 1);
+                        var by = x.IndexOf("by");
+                        var byValue = by > -1 ? x.Substring(by + 2).Trim() : string.Empty;
 
-                        if (int.Parse(lowerBound) == 1)
+                        if (int.Parse(lowerBound) == 1 && by < 0)
                         {
                             loopCount++;
-                            Console.WriteLine(true);
+                        }
+                        else if (by > 0 && (int.Parse(byValue)) == 1)
+                        {
+                            loopCount++;
+
+                            statements[index] = statements[index].Remove(by);
                         }
                         else
                         {
                             var name = x.Substring(3, x.IndexOf("=") - 3);
-                            change.Add(new LoopNameValue { Name = name });
+                            loopIndexChange.Add(new LoopIndexChange { ForLoopName = name });
 
                             var variable = x.Substring(4, x.IndexOf("to") - 4);
                             variable = variable.Replace(lowerBound.Trim(), "1");
 
-                            var stepSize = x.Contains("by") ? x.Substring(x.IndexOf("by") + "by".Length) : "1";
+                            var stepSize = by > 0 ? byValue : "1";
 
                             var upperBound = x.Substring(x.IndexOf("to") + 2, x.Contains("by") ? x.IndexOf("by") - x.IndexOf("to") - 2 : x.Length - x.IndexOf("to") - 2);
 
@@ -55,7 +62,10 @@ namespace CompilersFinalProject
                             var ss = int.Parse(stepSize);
                             var ub = int.Parse(upperBound);
 
-                            original = original.Replace("by" + stepSize, "");
+                            if (by > 0)
+                            {
+                                original = original.Remove(by);
+                            }
 
                             original = original.Replace(upperBound, " " + ((ub - lb + ss) / ss).ToString() + " ");
 
@@ -63,26 +73,26 @@ namespace CompilersFinalProject
 
                             original = original.Replace(statement, " " + variable.Trim() + " ");
 
-                            loops[index] = original;
+                            statements[index] = original;
 
-                            var otherIndex = change.FindIndex(s => s.Name == name ? true : false);
+                            var otherIndex = loopIndexChange.FindIndex(s => s.ForLoopName == name ? true : false);
 
-                            change[otherIndex].Value = stepSize.Trim() + " * " + change[otherIndex].Name.Trim() + " - " + (ss - lb).ToString();
+                            loopIndexChange[otherIndex].NewValue = stepSize.Trim() + " * " + loopIndexChange[otherIndex].ForLoopName.Trim() + " - " + (ss - lb).ToString();
 
                             if (loopCurrent == 0)
                             {
-                                endFor.Add(new EndFor { Index = endforIndex, Value = "let " + change[otherIndex].Name.Trim() + " = " + name.Trim() + " * " + stepSize + " - " + stepSize + " + " + lowerBound });
+                                endFor.Add(new EndFor { Index = endforIndex, EndingValue = "let " + loopIndexChange[otherIndex].ForLoopName.Trim() + " = " + name.Trim() + " * " + stepSize + " - " + stepSize + " + " + lowerBound });
                             }
                             else if (loopCurrent == 1 && loopCurrent + 1 != count)
                             {
-                                var first = loops.FindIndex(s => Regex.IsMatch(s, "\\b" + "endfor" + "\\b"));
-                                endforIndex = loops.FindIndex(first + 1, s => Regex.IsMatch(s, "\\b" + "endfor" + "\\b"));
-                                endFor.Add(new EndFor { Index = endforIndex, Value = "let " + change[otherIndex].Name.Trim() + " = " + name.Trim() + " * " + stepSize + " - " + stepSize + " + " + lowerBound });
+                                var first = statements.FindIndex(s => Regex.IsMatch(s, "\\b" + "endfor" + "\\b"));
+                                endforIndex = statements.FindIndex(first + 1, s => Regex.IsMatch(s, "\\b" + "endfor" + "\\b"));
+                                endFor.Add(new EndFor { Index = endforIndex, EndingValue = "let " + loopIndexChange[otherIndex].ForLoopName.Trim() + " = " + name.Trim() + " * " + stepSize + " - " + stepSize + " + " + lowerBound });
                             }
                             else
                             {
-                                endforIndex = loops.FindIndex(s => Regex.IsMatch(s, "\\b" + "endfor" + "\\b"));
-                                endFor.Add(new EndFor { Index = endforIndex, Value = "let " + change[otherIndex].Name.Trim() + " = " + name.Trim() + " * " + stepSize + " - " + stepSize + " + " + lowerBound });
+                                endforIndex = statements.FindIndex(s => Regex.IsMatch(s, "\\b" + "endfor" + "\\b"));
+                                endFor.Add(new EndFor { Index = endforIndex, EndingValue = "let " + loopIndexChange[otherIndex].ForLoopName.Trim() + " = " + name.Trim() + " * " + stepSize + " - " + stepSize + " + " + lowerBound });
                             }
                         }
 
@@ -90,11 +100,11 @@ namespace CompilersFinalProject
                     }
                     else if (x.StartsWith("let"))
                     {
-                        foreach (var item in change)
+                        foreach (var item in loopIndexChange)
                         {
-                            if (Regex.IsMatch(loops[index], "\\b" + item.Name.Trim() + "\\b"))
+                            if (Regex.IsMatch(statements[index], "\\b" + item.ForLoopName.Trim() + "\\b"))
                             {
-                                loops[index] = Regex.Replace(loops[index], "\\b" + item.Name.Trim() + "\\b", item.Value.Trim());
+                                statements[index] = Regex.Replace(statements[index], "\\b" + item.ForLoopName.Trim() + "\\b", item.NewValue.Trim());
                             }
                         }
                     }
@@ -110,42 +120,42 @@ namespace CompilersFinalProject
 
             foreach (var item in endFor)
             {
-                loops.Insert(item.Index, item.Value);
+                statements.Insert(item.Index, item.EndingValue);
             }
 
             if (count == loopCount)
             {
-                loops.Insert(0, "All loops are already normalized");
+                statements.Insert(0, "All loops are already normalized");
             }
             else
             {
-                loops.Insert(0, loopCount.ToString() + " loops are already normalized");
+                statements.Insert(0, loopCount.ToString() + " loops are already normalized");
             }
 
-            return loops.ToArray();
+            return statements.ToArray();
         }
-    }
 
-    /// <summary>
-    /// the loops name 
-    /// </summary>
-    public class LoopNameValue
-    {
-        public string Name { get; set; }
-        public string Value { get; set; }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class EndFor : IComparable<EndFor>
-    {
-        public int Index { get; set; }
-        public string Value { get; set; }
-
-        public int CompareTo(EndFor b)
+        /// <summary>
+        /// the loops name 
+        /// </summary>
+        private class LoopIndexChange
         {
-            return this.Index.CompareTo(b.Index);
+            public string ForLoopName { get; set; }
+            public string NewValue { get; set; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private class EndFor : IComparable<EndFor>
+        {
+            public int Index { get; set; }
+            public string EndingValue { get; set; }
+
+            public int CompareTo(EndFor b)
+            {
+                return this.Index.CompareTo(b.Index);
+            }
         }
     }
 }

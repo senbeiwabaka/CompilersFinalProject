@@ -123,11 +123,11 @@
             // 
             // txtNormalization
             // 
-            this.txtNormalization.Enabled = false;
             this.txtNormalization.Location = new System.Drawing.Point(265, 44);
             this.txtNormalization.Multiline = true;
             this.txtNormalization.Name = "txtNormalization";
             this.txtNormalization.ReadOnly = true;
+            this.txtNormalization.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtNormalization.Size = new System.Drawing.Size(242, 347);
             this.txtNormalization.TabIndex = 2;
             // 
