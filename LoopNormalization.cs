@@ -14,6 +14,7 @@ namespace CompilersFinalProject
         public static string[] Normalize(string[] code)
         {
             var statements = new List<string>(code);
+            code = null;
             // counts the number of for loops
             var count = Regex.Matches(string.Join(" ", statements), @"\b" + "for" + @"\b").Count;
             var loopCount = 0;
@@ -22,6 +23,9 @@ namespace CompilersFinalProject
             var loopCurrent = 0;
             var endforIndex = statements.FindLastIndex(x => Regex.IsMatch(x, "\\b" + "endfor" + "\\b"));
             var endFor = new List<EndFor>(count);
+            var ss = 0;
+            var lb = 0;
+            var ub = 0;
 
             statements.ForEach(x =>
                 {
@@ -60,9 +64,9 @@ namespace CompilersFinalProject
 
                             var upperBound = x.Substring(x.IndexOf("to") + 2, x.Contains("by") ? x.IndexOf("by") - x.IndexOf("to") - 2 : x.Length - x.IndexOf("to") - 2);
 
-                            var lb = int.Parse(lowerBound);
-                            var ss = int.Parse(stepSize);
-                            var ub = int.Parse(upperBound);
+                            lb = int.Parse(lowerBound);
+                            ss = int.Parse(stepSize);
+                            ub = int.Parse(upperBound);
 
                             if (by > 0)
                             {
@@ -102,32 +106,53 @@ namespace CompilersFinalProject
                     }
                     else if (x.StartsWith("let"))
                     {
-                        foreach (var item in loopIndexChange)
+                        for (var i = 0; i < loopIndexChange.Count; ++i)
                         {
-                            if (Regex.IsMatch(statements[index], "\\b" + item.ForLoopName.Trim() + "\\b"))
+                            if (Regex.IsMatch(statements[index], "\\b" + loopIndexChange[i].ForLoopName.Trim() + "\\b"))
                             {
-                                original = Regex.Replace(statements[index], "\\b" + item.ForLoopName.Trim() + "\\b", "(" + item.NewValue.Trim() + ")");
+                                var change = string.Empty;
+                                var secondchange = string.Empty;
+                                original = Regex.Replace(statements[index], "\\b" + loopIndexChange[i].ForLoopName.Trim() + "\\b", loopIndexChange[i].NewValue.Trim());
                                 statements[index] = original;
 
-                                if (original.Contains("(" + item.NewValue.Trim() + ") * .5"))
+                                if (original.Contains(loopIndexChange[i].NewValue.Trim() + " * .5"))
                                 {
-                                    original = original.Replace("(" + item.NewValue.Trim() + ") * .5", "(" + item.NewValue.Trim() + " * .5)");
-                                    Console.WriteLine(true);
+                                    if (original.Contains("- " + loopIndexChange[i].NewValue.Trim()))
+                                    {
+                                        secondchange = "+ " + (-1 * ss).ToString() + " * " + loopIndexChange[i].ForLoopName.Trim() + " + " + (ss - lb).ToString();
+                                        original = original.Replace("- " + loopIndexChange[i].NewValue.Trim() + " * .5", secondchange);
+                                        Console.WriteLine(true);
+                                        change = "+ " + (ss * .5).ToString() + " * " + loopIndexChange[i].ForLoopName.Trim() + " + " + ((ss - lb) * .5).ToString();
+                                        Console.WriteLine(change);
+                                        original = original.Replace(secondchange, change);
+                                        Console.WriteLine(true);
+                                    }
+                                    else
+                                    {
+                                        change = (ss * .5).ToString() + " * " + loopIndexChange[i].ForLoopName.Trim() + " - " + ((ss - lb) * .5).ToString();
+                                        Console.WriteLine(change);
+                                        original = original.Replace(secondchange, change);
+                                        Console.WriteLine(true);
+                                    }
                                 }
 
-                                if (original.Contains("- (" + item.NewValue.Trim() + " * .5)"))
-                                {
-                                    original = original.Replace("- (" + item.NewValue.Trim() + ") * .5", "(- " + item.NewValue.Trim() + " * .5)");
-                                    Console.WriteLine(true);
-                                }
+                                //if (!string.IsNullOrEmpty(change) && original.Contains("- " + change))
+                                //{
+                                //    original = original.Replace("- " + change, " + (- " + change + ")");
+                                //    Console.WriteLine(true);
+                                //}
 
                                 statements[index] = original;
+                                change = string.Empty;
+                                secondchange = string.Empty;
                             }
                         }
                     }
                 });
 
             endFor.Sort();
+            loopIndexChange.Clear();
+            loopIndexChange = null;
 
             for (int i = 0; i < endFor.Count; i++)
             {
