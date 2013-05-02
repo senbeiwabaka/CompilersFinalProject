@@ -32,7 +32,7 @@ namespace CompilersFinalProject
 
                     if (Regex.IsMatch(x, pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace))
                     {
-                        var lowerBound = x.Substring(x.IndexOf("=") + 1, x.IndexOf("to") - x.IndexOf("=") - 1);
+                        var lowerBound = x.Substring(x.IndexOf("=") + 1, x.IndexOf("to") - x.IndexOf("=") - 1).Trim();
                         var by = x.IndexOf("by");
                         var byValue = by > -1 ? x.Substring(by + 2).Trim() : string.Empty;
 
@@ -44,7 +44,9 @@ namespace CompilersFinalProject
                         {
                             loopCount++;
 
-                            statements[index] = statements[index].Remove(by);
+                            statements[index] = statements[index].Remove(statements[index].IndexOf("by"));
+
+                            Console.WriteLine(true);
                         }
                         else
                         {
@@ -64,7 +66,7 @@ namespace CompilersFinalProject
 
                             if (by > 0)
                             {
-                                original = original.Remove(by);
+                                original = original.Remove(original.IndexOf("by"));
                             }
 
                             original = original.Replace(upperBound, " " + ((ub - lb + ss) / ss).ToString() + " ");
@@ -104,7 +106,22 @@ namespace CompilersFinalProject
                         {
                             if (Regex.IsMatch(statements[index], "\\b" + item.ForLoopName.Trim() + "\\b"))
                             {
-                                statements[index] = Regex.Replace(statements[index], "\\b" + item.ForLoopName.Trim() + "\\b", item.NewValue.Trim());
+                                original = Regex.Replace(statements[index], "\\b" + item.ForLoopName.Trim() + "\\b", "(" + item.NewValue.Trim() + ")");
+                                statements[index] = original;
+
+                                if (original.Contains("(" + item.NewValue.Trim() + ") * .5"))
+                                {
+                                    original = original.Replace("(" + item.NewValue.Trim() + ") * .5", "(" + item.NewValue.Trim() + " * .5)");
+                                    Console.WriteLine(true);
+                                }
+
+                                if (original.Contains("- (" + item.NewValue.Trim() + " * .5)"))
+                                {
+                                    original = original.Replace("- (" + item.NewValue.Trim() + ") * .5", "(- " + item.NewValue.Trim() + " * .5)");
+                                    Console.WriteLine(true);
+                                }
+
+                                statements[index] = original;
                             }
                         }
                     }
@@ -133,6 +150,19 @@ namespace CompilersFinalProject
             }
 
             return statements.ToArray();
+        }
+
+        private static int Count(string statement, string pattern)
+        {
+            var count = 0;
+            var  i = 0;
+            while ((i = statement.IndexOf(pattern, i)) != -1)
+            {
+                i += pattern.Length;
+                count++;
+            }
+
+            return count;
         }
 
         /// <summary>
