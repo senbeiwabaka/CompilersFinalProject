@@ -33,7 +33,6 @@
             this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loopNormalizationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.outputGenerationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.dependencyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.txtCode = new System.Windows.Forms.TextBox();
@@ -42,8 +41,6 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.txtOutput = new System.Windows.Forms.TextBox();
-            this.txtDependency = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -53,7 +50,7 @@
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1016, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(765, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -63,7 +60,6 @@
             this.loadToolStripMenuItem,
             this.loopNormalizationToolStripMenuItem,
             this.outputGenerationToolStripMenuItem,
-            this.dependencyToolStripMenuItem,
             this.toolStripSeparator1,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
@@ -92,14 +88,6 @@
             this.outputGenerationToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
             this.outputGenerationToolStripMenuItem.Text = "Output Generation";
             this.outputGenerationToolStripMenuItem.Click += new System.EventHandler(this.outputGenerationToolStripMenuItem_Click);
-            // 
-            // dependencyToolStripMenuItem
-            // 
-            this.dependencyToolStripMenuItem.Enabled = false;
-            this.dependencyToolStripMenuItem.Name = "dependencyToolStripMenuItem";
-            this.dependencyToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
-            this.dependencyToolStripMenuItem.Text = "Dependency";
-            this.dependencyToolStripMenuItem.Click += new System.EventHandler(this.dependencyToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
@@ -168,32 +156,11 @@
             this.txtOutput.Size = new System.Drawing.Size(242, 347);
             this.txtOutput.TabIndex = 6;
             // 
-            // txtDependency
-            // 
-            this.txtDependency.Enabled = false;
-            this.txtDependency.Location = new System.Drawing.Point(761, 44);
-            this.txtDependency.Multiline = true;
-            this.txtDependency.Name = "txtDependency";
-            this.txtDependency.ReadOnly = true;
-            this.txtDependency.Size = new System.Drawing.Size(242, 347);
-            this.txtDependency.TabIndex = 7;
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(758, 28);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(68, 13);
-            this.label4.TabIndex = 8;
-            this.label4.Text = "Dependency";
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1016, 403);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.txtDependency);
+            this.ClientSize = new System.Drawing.Size(765, 403);
             this.Controls.Add(this.txtOutput);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -218,7 +185,6 @@
         private System.Windows.Forms.ToolStripMenuItem loadToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loopNormalizationToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem outputGenerationToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem dependencyToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.TextBox txtCode;
@@ -227,8 +193,6 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox txtOutput;
-        private System.Windows.Forms.TextBox txtDependency;
-        private System.Windows.Forms.Label label4;
     }
 }
 
