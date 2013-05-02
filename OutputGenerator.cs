@@ -15,6 +15,7 @@ namespace CompilersFinalProject
         /// <returns></returns>
         public static string[] Generate(List<string> code)
         {
+            //code.RemoveAt(0);
             // the output to be retuned to the caller
             var output = new List<string>();
             // to hold the statements between var and begin
@@ -127,7 +128,7 @@ namespace CompilersFinalProject
                         {
                             count = LineGeneration(variable, count, forloops, loopIndex, index, beforeEqual.Substring(4).Trim(), out array, out endfor, out const_coeff);
 
-                            lineinfo.Add(new LineInformation { LineNumber = index, Array = array.TypeInt, LoopDepth = (count - endfor), Constant_Coeffient = const_coeff, Write = true });
+                            lineinfo.Add(new LineInformation { LineNumber = index, Array = array.Position, LoopDepth = (count - endfor), Constant_Coeffient = const_coeff, Write = true });
                         }
 
                         if (!string.IsNullOrEmpty(afterEqual))
@@ -139,7 +140,7 @@ namespace CompilersFinalProject
                             {
                                 count = LineGeneration(variable, count, forloops, loopIndex, index, afterEqual.Substring(0, afterEqual.IndexOf("]") + 1), out array, out endfor, out const_coeff);
 
-                                lineinfo.Add(new LineInformation { LineNumber = index, Array = array.TypeInt, LoopDepth = (count - endfor), Constant_Coeffient = const_coeff, Write = false });
+                                lineinfo.Add(new LineInformation { LineNumber = index, Array = array.Position, LoopDepth = (count - endfor), Constant_Coeffient = const_coeff, Write = false });
 
                                 if (afterEqual.IndexOf("]") + 1 >= afterEqual.Length || afterEqual.ToCharArray().Count(s => s.Equals("]")) < 0)
                                 {
@@ -248,19 +249,67 @@ namespace CompilersFinalProject
         /// <param name="statement">the array statement to fill the constant and coefficient list</param>
         private static void ReadWriteLoopInformation(int count, List<LoopInformation> loopIndex, int endfor, List<int> constant, List<int> coefficient, string statement, int currentDepth)
         {
-            // separates all the values into individual elements of a list
             var elements = ValueExtration(statement);
+            //var k = 0;
+            var bigger = false;
+            var biggerValue = 0;
+            var indexVariable = "";
+            if (statement.Contains("("))
+            {
+                elements = ValueExtration(statement.Substring(statement.IndexOf("(") + 1, statement.IndexOf(")") - statement.IndexOf("(") - 1));
+                var s = string.Empty;
+                foreach (var item in elements)
+                {
+                    s += item + " ";
+                    if (loopIndex.Exists(x => x.LoopIndex.Trim().Equals(item)))
+                    {
+                        indexVariable = item.Trim();
+                    }
+                }
+                if (loopIndex.Find(x => x.LoopIndex.Trim().Equals(indexVariable)).Depth > 1)
+                {
+                    bigger = true;
+                }
+                ReadWriteHelper(count, loopIndex, constant, coefficient, elements);
+                statement = statement.Replace("(" + s.Trim() + ")", constant[0].ToString());
+                constant.Clear();
+                s = null;
+                if (bigger)
+                {
+                    biggerValue = coefficient[loopIndex.Find(x => x.LoopIndex.Trim().Equals(indexVariable)).Depth - 1];
+                    coefficient.Clear();
+                }
+            }
+
+            ReadWriteHelper(count, loopIndex, constant, coefficient, elements);
+
+            if (bigger)
+            {
+                coefficient[loopIndex.Find(x => x.LoopIndex.Trim().Equals(indexVariable)).Depth - 1] = biggerValue;
+                Console.WriteLine(true);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="count"></param>
+        /// <param name="loopIndex"></param>
+        /// <param name="constant"></param>
+        /// <param name="coefficient"></param>
+        /// <param name="elements"></param>
+        private static void ReadWriteHelper(int count, List<LoopInformation> loopIndex, List<int> constant, List<int> coefficient, List<string> elements)
+        {
             var k = 0;
             var result = 0;
             var depth = 1;
             var loopIndexCount = 0;
             var smallest = new List<LoopInformation>();
-
-             loopIndexCount = ElementChange(elements, count, loopIndex, endfor, constant, coefficient, statement, currentDepth, smallest);
+            loopIndexCount = ElementChange(elements, loopIndex, smallest);
 
             if (loopIndexCount == 2 && (smallest.Max().Depth - smallest.Min().Depth) == 1)
             {
-                if (smallest.Min().Depth==1)
+                if (smallest.Min().Depth == 1)
                 {
                     depth = smallest.Max().Depth;
                 }
@@ -279,6 +328,11 @@ namespace CompilersFinalProject
                 depth = smallest.Max().Depth - 1;
             }
 
+            foreach (var item in elements)
+            {
+                Console.WriteLine(item);
+            }
+
             while (k < elements.Count)
             {
                 var li = loopIndex.Find(s => s.LoopIndex == elements[k].Trim());
@@ -293,9 +347,22 @@ namespace CompilersFinalProject
                             ++depth;
                         }
 
-                        coefficient.Add(int.Parse(elements[k - 2]));
+                        if (k - 3 > 0 && elements[k - 3] == "-")
+                        {
+                            coefficient.Add(int.Parse(elements[k - 2]) * -1);
+                            elements.RemoveRange(k - 3, 4);
+                        }
+                        else if (k - 3 > 0 && elements[k - 3] == "+")
+                        {
+                            coefficient.Add(int.Parse(elements[k - 2]));
+                            elements.RemoveRange(k - 3, 4);
+                        }
+                        else
+                        {
+                            coefficient.Add(int.Parse(elements[k - 2]));
+                            elements.RemoveRange(k - 2, 3);
+                        }
 
-                        elements.RemoveRange(k - 2, 3);
                         k = 0;
                     }
                     else if (elements[k - 1] == "-")
@@ -307,7 +374,7 @@ namespace CompilersFinalProject
                         }
 
                         coefficient.Add(-1);
-                        
+
                         elements.RemoveRange(k - 1, 2);
                         k = 0;
                     }
@@ -335,7 +402,7 @@ namespace CompilersFinalProject
 
                     coefficient.Add(1);
 
-                    if (elements.Count >1)
+                    if (elements.Count > 1)
                     {
                         if (elements[k + 1] == "+")
                         {
@@ -367,6 +434,7 @@ namespace CompilersFinalProject
                 constant.Add(0);
                 elements.Clear();
                 elements.TrimExcess();
+                return;
             }
 
             if (elements.Count <= 2 && elements.Capacity > 0)
@@ -375,16 +443,45 @@ namespace CompilersFinalProject
                 {
                     constant.Add(-int.Parse(elements[1]));
                     elements.Clear();
+                    return;
                 }
                 else if (elements[0] == "+")
                 {
                     constant.Add(int.Parse(elements[1]));
                     elements.Clear();
+                    return;
                 }
                 else if (int.TryParse(elements[0], out result))
                 {
                     constant.Add(result);
                     elements.Clear();
+                    return;
+                }
+            }
+
+            if (elements[0] == "-")
+            {
+                if (elements[1] == "-")
+                {
+                    elements.RemoveRange(0, 2);
+                }
+                else
+                {
+                    elements.RemoveAt(0);
+                    elements[0] = (int.Parse(elements[0]) * -1).ToString();
+                }
+            }
+            else if (elements[0] == "+")
+            {
+                if (elements[1] == "-")
+                {
+                    elements.RemoveRange(0, 2);
+                    elements[0] = (int.Parse(elements[0]) * -1).ToString();
+                }
+                else
+                {
+                    elements.RemoveAt(0);
+                    elements[0] = (int.Parse(elements[0]) * -1).ToString();
                 }
             }
 
@@ -399,6 +496,31 @@ namespace CompilersFinalProject
                     elements.RemoveAt(k - 1);
                     result = 0;
                     k = 0;
+                }
+                else if (elements[k] == "/")
+                {
+                    if (int.Parse(elements[k - 1]) == 0)
+                    {
+                        if (k - 2 > 0)
+                        {
+                            elements.RemoveRange(k - 2, 4);
+                        }
+                        else
+                        {
+                            elements.RemoveRange(k - 1, 3);
+                        }
+                        k = 0;
+                    }
+                    else
+                    {
+                        result = int.Parse(elements[k - 1]) / int.Parse(elements[k + 1]);
+                        elements[k] = result.ToString();
+                        elements.RemoveAt(k + 1);
+                        elements.RemoveAt(k - 1);
+                        result = 0;
+                        k = 0;
+                    }
+                    Console.WriteLine(true);
                 }
                 else
                 {
@@ -441,7 +563,14 @@ namespace CompilersFinalProject
             }
         }
 
-        private static int ElementChange(List<string> elements, int count, List<LoopInformation> loopIndex, int endfor, List<int> constant, List<int> coefficient, string statement, int currentDepth, List<LoopInformation> smallest)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="elements"></param>
+        /// <param name="loopIndex"></param>
+        /// <param name="smallest"></param>
+        /// <returns></returns>
+        private static int ElementChange(List<string> elements, List<LoopInformation> loopIndex, List<LoopInformation> smallest)
         {
             var loopIndexCount = 0;
 
