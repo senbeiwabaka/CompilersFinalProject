@@ -1,0 +1,14 @@
+title loop norm example 2 by t. oneil 4.30.2013
+var
+   int i
+   int j
+   list[7704] a
+   list[100] b
+   list[200] c
+begin
+   for i = 1 to 100 by 1
+      for j = 2 to 200 by 3
+         let a[77 * i + j - 62] = b[i] + c[j]
+      endfor
+   endfor
+end

@@ -1,0 +1,13 @@
+title loop norm example 1 by t. oneil 4.30.2013
+var
+   int i
+   int j
+   table[99, 99] rx
+begin
+   for j = 3 to 100 by 2
+      let rx[j, j] = rx[j, j] * 2
+      for i = 2 to 99 by 2
+         let rx[i, j - i * .5] = rx[i, j - i * .5 - 1] / 2
+      endfor
+   endfor
+end

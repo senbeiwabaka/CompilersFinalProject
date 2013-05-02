@@ -1,0 +1,9 @@
+title loop norm example 3 by t. oneil 4.30.2013
+var
+   int i
+   list[1000] a
+begin
+   for i = 1000 to 1 by -2
+      let a[i] = a[i] + 5
+   endfor
+end
